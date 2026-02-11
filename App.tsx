@@ -1,5 +1,5 @@
 import React from "react";
-import { AppRegistry, StyleSheet, StatusBar } from "react-native";
+import { AppRegistry, StyleSheet, StatusBar, BackHandler } from "react-native";
 import MoveFingerAnimation from "./src/screens/MoveFingerAnimation";
 import StarCatcherLoadingScreen from "./src/screens/StarCatcherLoadingScreen";
 
@@ -33,6 +33,25 @@ const MainContent = () => {
       setCurrentScreen('howToPlay');
     }
   };
+
+  // Handle Android Back Button
+  React.useEffect(() => {
+    const onBackPress = () => {
+      if (currentScreen === 'menu' || currentScreen === 'loading') {
+        return false; // Exit the app
+      }
+      // Navigate back to menu
+      setCurrentScreen('menu');
+      return true; // Prevent default behavior
+    };
+
+    const subscription = BackHandler.addEventListener(
+      'hardwareBackPress',
+      onBackPress
+    );
+
+    return () => subscription.remove();
+  }, [currentScreen]);
 
   // Reload settings when entering game or returning from settings
   React.useEffect(() => {

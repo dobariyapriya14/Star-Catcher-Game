@@ -34,8 +34,18 @@ const GameMenuScreen: React.FC<Props> = ({ onStartGame, onSettings, onViewScore 
     return (
         <>
             <View style={styles.container}>
-                {/* Background Stars */}
                 {stars}
+
+                {/* Header: Score (Left) & Settings (Right) */}
+                <View style={styles.header}>
+                    <TouchableOpacity style={styles.scoreButton} onPress={onViewScore}>
+                        <Text style={styles.scoreButtonText}>🏆</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity style={styles.iconButton} onPress={onSettings}>
+                        <Text style={styles.settingsIcon}>⚙️</Text>
+                    </TouchableOpacity>
+                </View>
 
                 {/* Title Section */}
                 <View style={styles.titleContainer}>
@@ -61,21 +71,7 @@ const GameMenuScreen: React.FC<Props> = ({ onStartGame, onSettings, onViewScore 
                             <Text style={styles.buttonSubText}>No Timer • High Score</Text>
                         </View>
                     </TouchableOpacity>
-
-                    {/* Leaderboards/Score Button */}
-                    <TouchableOpacity style={styles.settingsButton} onPress={onViewScore}>
-                        <Text style={styles.settingsIcon}>🏆</Text>
-                        <Text style={styles.settingsText}>VIEW SCORES</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity style={styles.settingsButton} onPress={onSettings}>
-                        <Text style={styles.settingsIcon}>⚙️</Text>
-                        <Text style={styles.settingsText}>SETTINGS</Text>
-                    </TouchableOpacity>
                 </View>
-
-
-
             </View>
         </>
     );
@@ -84,10 +80,30 @@ const GameMenuScreen: React.FC<Props> = ({ onStartGame, onSettings, onViewScore 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#050B14', // Deep dark blue/black matching loading screen
+        backgroundColor: '#050B14',
         padding: 24,
         justifyContent: 'center',
         alignItems: 'center',
+    },
+    header: {
+        position: 'absolute',
+        top: 50,
+        width: '100%',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        zIndex: 50,
+        paddingHorizontal: 10,
+    },
+    scoreButton: {
+        paddingHorizontal: 16,
+        paddingVertical: 10,
+        borderRadius: 20,
+    },
+    scoreButtonText: {
+        color: '#E5E7EB',
+        fontWeight: 'bold',
+        fontSize: 24,
     },
     topBar: {
         flexDirection: 'row',
@@ -133,16 +149,16 @@ const styles = StyleSheet.create({
         fontWeight: '700',
     },
     iconButton: {
-        width: 44,
-        height: 44,
+        width: 54,
+        height: 54,
         borderRadius: 22,
-        backgroundColor: '#1F2937',
+        // backgroundColor: '#1F2937',
         justifyContent: 'center',
         alignItems: 'center',
     },
     iconText: {
         color: 'white',
-        fontSize: 18,
+        fontSize: 22,
     },
     titleContainer: {
         alignItems: 'center',
@@ -175,7 +191,7 @@ const styles = StyleSheet.create({
         width: '100%',
         height: 64,
         borderRadius: 32,
-        backgroundColor: '#2563EB', // Vibrant Blue
+        backgroundColor: '#2563EB',
         flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',
@@ -209,7 +225,7 @@ const styles = StyleSheet.create({
         marginTop: 10,
     },
     settingsIcon: {
-        fontSize: 18,
+        fontSize: 24,
         marginRight: 8,
         color: '#9CA3AF',
     },

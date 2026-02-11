@@ -294,7 +294,6 @@ const styles = StyleSheet.create({
     summaryContainer: {
         padding: 20,
         backgroundColor: '#111827',
-        margin: 20,
         marginBottom: 10,
         borderRadius: 20,
         borderWidth: 1,

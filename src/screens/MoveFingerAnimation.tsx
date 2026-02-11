@@ -1,4 +1,5 @@
 import React, { useState, useRef, useMemo, useEffect } from "react";
+import { useSound } from '../context/SoundContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StyleSheet, Dimensions, View, Text, TouchableOpacity, Modal, Animated } from "react-native";
 import { GameEngine } from "react-native-game-engine";
@@ -206,6 +207,15 @@ const MoveFinger = (entities: any, { touches, time, dispatch }: { touches: Touch
         if (distance < 30 && (score.mode === 'endless' || score.time > 0)) {
             const collectedType = star.type || 'normal';
 
+            // Play SFX based on type
+            if (entities.audio) {
+                if (collectedType === 'bomb') {
+                    if (entities.audio.playBombSfx) entities.audio.playBombSfx();
+                } else if (entities.audio.playSfx) {
+                    entities.audio.playSfx();
+                }
+            }
+
             // Initialize stats if missing
             score.collectedStars = score.collectedStars || 0;
             score.collectedRainbows = score.collectedRainbows || 0;
@@ -301,6 +311,7 @@ interface MoveFingerAnimationProps {
 }
 
 const MoveFingerAnimation: React.FC<MoveFingerAnimationProps> = ({ onExit, mode, fingerColor = '#00FFFF' }) => {
+    const { playSfx, playBombSfx } = useSound();
     const [running, setRunning] = useState(true);
     const [gameOver, setGameOver] = useState(false);
     const [score, setScore] = useState(0);
@@ -469,6 +480,7 @@ const MoveFingerAnimation: React.FC<MoveFingerAnimationProps> = ({ onExit, mode,
         // Force reset entities
         if (engineRef.current) {
             (engineRef.current as any).swap({
+                audio: { playSfx, playBombSfx },
                 control: { signal: stopSignal.current, renderer: <View /> },
                 1: { position: [width / 2, height - 150], color: fingerColor, renderer: <Finger /> },
                 2: { position: [width / 2, height - 150], color: fingerColor, renderer: <Finger /> },
@@ -506,6 +518,7 @@ const MoveFingerAnimation: React.FC<MoveFingerAnimationProps> = ({ onExit, mode,
                     running={running}
                     onEvent={onEvent}
                     entities={{
+                        audio: { playSfx, playBombSfx },
                         control: { signal: stopSignal.current, renderer: <View /> },
                         1: { position: [width / 2, height - 150], color: fingerColor, renderer: <Finger /> },
                         2: { position: [width / 2, height - 150], color: fingerColor, renderer: <Finger /> },

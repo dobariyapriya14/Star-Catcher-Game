@@ -19,8 +19,7 @@ const COLORS = [
 ];
 
 const SettingsScreen: React.FC<Props> = ({ onBack }) => {
-    const { isSoundEnabled, toggleSound } = useSound();
-    const [musicEnabled, setMusicEnabled] = useState(true);
+    const { isSoundEnabled, toggleSound, isSfxEnabled, toggleSfx } = useSound();
     const [selectedColor, setSelectedColor] = useState('#00FFFF');
 
     useEffect(() => {
@@ -46,26 +45,11 @@ const SettingsScreen: React.FC<Props> = ({ onBack }) => {
     };
 
     const handleResetScores = async () => {
-        Alert.alert(
-            "Reset High Scores",
-            "Are you sure you want to wipe all score history?",
-            [
-                { text: "Cancel", style: "cancel" },
-                {
-                    text: "Reset",
-                    style: "destructive",
-                    onPress: async () => {
-                        try {
-                            await AsyncStorage.removeItem('gameScores');
-                            Alert.alert("Success", "High scores have been reset.");
-                        } catch (e) {
-                            console.error('Failed to reset scores', e);
-                            Alert.alert("Error", "Failed to reset scores.");
-                        }
-                    }
-                }
-            ]
-        );
+        try {
+            await AsyncStorage.removeItem('gameScores');
+        } catch (e) {
+            console.error('Failed to reset scores', e);
+        }
     };
 
     return (
@@ -104,14 +88,26 @@ const SettingsScreen: React.FC<Props> = ({ onBack }) => {
 
                     <View style={styles.row}>
                         <View style={styles.iconContainer}>
-                            <Text style={styles.icon}>🔊</Text>
+                            <Text style={styles.icon}>🎵</Text>
                         </View>
-                        <Text style={styles.rowLabel}>Sound FX</Text>
+                        <Text style={styles.rowLabel}>Music</Text>
                         <Switch
                             trackColor={{ false: "#1F2937", true: "#3B82F6" }}
                             thumbColor={isSoundEnabled ? "#ffffff" : "#f4f3f4"}
                             onValueChange={toggleSound}
                             value={isSoundEnabled}
+                        />
+                    </View>
+                    <View style={styles.row}>
+                        <View style={styles.iconContainer}>
+                            <Text style={styles.icon}>🔊</Text>
+                        </View>
+                        <Text style={styles.rowLabel}>Sound FX</Text>
+                        <Switch
+                            trackColor={{ false: "#1F2937", true: "#3B82F6" }}
+                            thumbColor={isSfxEnabled ? "#ffffff" : "#f4f3f4"}
+                            onValueChange={toggleSfx}
+                            value={isSfxEnabled}
                         />
                     </View>
 
