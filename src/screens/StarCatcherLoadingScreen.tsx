@@ -76,7 +76,6 @@ const StarCatcherLoadingScreen: React.FC<Props> = ({ onFinish }) => {
             {/* Background Stars */}
             {stars}
 
-            {/* Main Content */}
             <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
                 {/* Central Graphic */}
                 <View style={styles.graphicContainer}>

@@ -149,7 +149,7 @@ const HowToPlayScreen: React.FC<Props> = ({ onPlay, onClose }) => {
                 </View>
 
                 {/* Slider */}
-                <View style={{ flex: 1 }}>
+                <View style={{ marginBottom: 60 }}>
                     <FlatList
                         ref={flatListRef}
                         data={SLIDES}

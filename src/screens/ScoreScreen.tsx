@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, StatusBar } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface ScoreStats {
@@ -36,9 +36,6 @@ const ScoreScreen: React.FC<Props> = ({ onBack }) => {
         totalRainbows: 0,
         totalBombs: 0
     });
-
-    console.log('score', JSON.stringify(scores))
-    console.log('totalStats', totalStats)
 
     useEffect(() => {
         loadScores();
@@ -128,7 +125,6 @@ const ScoreScreen: React.FC<Props> = ({ onBack }) => {
 
     return (
         <View style={styles.container}>
-            <StatusBar barStyle="light-content" backgroundColor="#0B131F" />
             <View style={styles.header}>
                 <TouchableOpacity onPress={onBack} style={styles.closeButton}>
                     <Text style={styles.closeIcon}>‹</Text>
