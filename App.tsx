@@ -1,45 +1,112 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
+import React from "react";
+import { AppRegistry, StyleSheet, StatusBar } from "react-native";
+import MoveFingerAnimation from "./src/screens/MoveFingerAnimation";
+import StarCatcherLoadingScreen from "./src/screens/StarCatcherLoadingScreen";
 
-import { NewAppScreen } from '@react-native/new-app-screen';
-import { StatusBar, StyleSheet, useColorScheme, View } from 'react-native';
-import {
-  SafeAreaProvider,
-  useSafeAreaInsets,
-} from 'react-native-safe-area-context';
+import GameMenuScreen from "./src/screens/GameMenuScreen";
+import SettingsScreen from "./src/screens/SettingsScreen";
+import HowToPlayScreen from "./src/screens/HowToPlayScreen";
 
-function App() {
-  const isDarkMode = useColorScheme() === 'dark';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-  return (
-    <SafeAreaProvider>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <AppContent />
-    </SafeAreaProvider>
-  );
-}
+import { SoundProvider } from './src/context/SoundContext';
 
-function AppContent() {
-  const safeAreaInsets = useSafeAreaInsets();
+import ScoreScreen from './src/screens/ScoreScreen';
 
-  return (
-    <View style={styles.container}>
-      <NewAppScreen
-        templateFileName="App.tsx"
-        safeAreaInsets={safeAreaInsets}
+const MainContent = () => {
+  const [currentScreen, setCurrentScreen] = React.useState<'loading' | 'howToPlay' | 'menu' | 'settings' | 'game' | 'score'>('loading');
+  const [gameMode, setGameMode] = React.useState<'classic' | 'endless'>('classic');
+  const [fingerColor, setFingerColor] = React.useState('#00FFFF');
+
+  const checkFirstLaunch = async () => {
+    try {
+      const savedColor = await AsyncStorage.getItem('fingerColor');
+      if (savedColor) setFingerColor(savedColor);
+
+      const hasSeen = await AsyncStorage.getItem('hasSeenHowToPlay');
+      if (hasSeen === 'true') {
+        setCurrentScreen('menu');
+      } else {
+        setCurrentScreen('howToPlay');
+      }
+    } catch (e) {
+      setCurrentScreen('howToPlay');
+    }
+  };
+
+  // Reload settings when entering game or returning from settings
+  React.useEffect(() => {
+    if (currentScreen === 'game' || currentScreen === 'menu') {
+      (async () => {
+        const savedColor = await AsyncStorage.getItem('fingerColor');
+        if (savedColor) setFingerColor(savedColor);
+      })();
+    }
+  }, [currentScreen]);
+
+  if (currentScreen === 'loading') {
+    return <StarCatcherLoadingScreen onFinish={checkFirstLaunch} />;
+  }
+
+  const handleHowToPlayFinish = async () => {
+    try {
+      await AsyncStorage.setItem('hasSeenHowToPlay', 'true');
+    } catch (e) {
+      // Ignore error
+    }
+    setCurrentScreen('game');
+  };
+
+  if (currentScreen === 'howToPlay') {
+    return (
+      <HowToPlayScreen
+        onPlay={handleHowToPlayFinish}
+        onClose={() => setCurrentScreen('menu')}
       />
-    </View>
+    );
+  }
+
+  if (currentScreen === 'menu') {
+    return (
+      <GameMenuScreen
+        onStartGame={(mode) => {
+          setGameMode(mode);
+          setCurrentScreen('game');
+        }}
+        onSettings={() => setCurrentScreen('settings')}
+        onViewScore={() => setCurrentScreen('score')}
+      />
+    );
+  }
+
+  if (currentScreen === 'settings') {
+    return <SettingsScreen onBack={() => setCurrentScreen('menu')} />;
+  }
+
+  if (currentScreen === 'score') {
+    return <ScoreScreen onBack={() => setCurrentScreen('menu')} />;
+  }
+
+  return (
+    <MoveFingerAnimation mode={gameMode} fingerColor={fingerColor} onExit={() => setCurrentScreen('menu')} />
   );
-}
+};
+
+const BestGameEver = () => {
+  return (
+    <>
+      <StatusBar barStyle="light-content" backgroundColor="#0B131F" hidden={true} />
+      <SoundProvider>
+        <MainContent />
+      </SoundProvider>
+    </>
+  );
+};
+export default BestGameEver;
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
+    backgroundColor: "black"
+  }
 });
-
-export default App;
