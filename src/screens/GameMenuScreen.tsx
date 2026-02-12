@@ -103,7 +103,7 @@ const styles = StyleSheet.create({
     scoreButtonText: {
         color: '#E5E7EB',
         fontWeight: 'bold',
-        fontSize: 24,
+        fontSize: 30,
     },
     topBar: {
         flexDirection: 'row',
@@ -225,7 +225,7 @@ const styles = StyleSheet.create({
         marginTop: 10,
     },
     settingsIcon: {
-        fontSize: 24,
+        fontSize: 30,
         marginRight: 8,
         color: '#9CA3AF',
     },

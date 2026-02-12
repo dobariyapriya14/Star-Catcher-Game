@@ -210,6 +210,7 @@ const styles = StyleSheet.create({
     },
     listContent: {
         padding: 20,
+        paddingBottom: 70,
     },
     scoreCard: {
         backgroundColor: '#111827',
