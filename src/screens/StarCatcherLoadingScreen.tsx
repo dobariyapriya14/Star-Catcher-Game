@@ -1,19 +1,33 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { View, Text, StyleSheet, Animated, Dimensions } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width, height } = Dimensions.get('window');
 
 interface Props {
-    onFinish: () => void;
+    // Navigation props are injected automatically or used via hook
 }
 
-
-
-const StarCatcherLoadingScreen: React.FC<Props> = ({ onFinish }) => {
+const StarCatcherLoadingScreen: React.FC<Props> = () => {
+    const navigation = useNavigation<any>();
     const [progress, setProgress] = useState(0);
     const fadeAnim = useRef(new Animated.Value(0)).current;
     const starScale = useRef(new Animated.Value(0.5)).current;
     const circlesScale = useRef(new Animated.Value(0)).current;
+
+    const checkFirstLaunch = async () => {
+        try {
+            const hasSeen = await AsyncStorage.getItem('hasSeenHowToPlay');
+            if (hasSeen === 'true') {
+                navigation.replace('Menu');
+            } else {
+                navigation.replace('HowToPlay');
+            }
+        } catch (e) {
+            navigation.replace('HowToPlay');
+        }
+    };
 
     useEffect(() => {
         // Fade in
@@ -41,7 +55,7 @@ const StarCatcherLoadingScreen: React.FC<Props> = ({ onFinish }) => {
             setProgress((prev) => {
                 if (prev >= 100) {
                     clearInterval(interval);
-                    setTimeout(onFinish, 500); // Wait a bit after 100%
+                    setTimeout(checkFirstLaunch, 500); // Wait a bit after 100%
                     return 100;
                 }
                 // Random increment

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, FlatList } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useNavigation } from '@react-navigation/native';
 
 interface ScoreStats {
     stars: number;
@@ -24,11 +25,10 @@ interface ScoreEntry {
     stats?: ScoreStats;
 }
 
-interface Props {
-    onBack: () => void;
-}
+interface Props { }
 
-const ScoreScreen: React.FC<Props> = ({ onBack }) => {
+const ScoreScreen: React.FC<Props> = () => {
+    const navigation = useNavigation();
     const [scores, setScores] = useState<ScoreEntry[]>([]);
     const [totalStats, setTotalStats] = useState({
         totalScore: 0,
@@ -129,7 +129,7 @@ const ScoreScreen: React.FC<Props> = ({ onBack }) => {
     return (
         <View style={styles.container}>
             <View style={styles.header}>
-                <TouchableOpacity onPress={onBack} style={styles.closeButton}>
+                <TouchableOpacity onPress={() => navigation.goBack()} style={styles.closeButton}>
                     <Text style={styles.closeIcon}>‹</Text>
                 </TouchableOpacity>
                 <Text style={styles.headerTitle}>High Scores</Text>

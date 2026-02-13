@@ -8,7 +8,6 @@ import { Score } from "../components/Score";
 import { Finger } from "../components/finger";
 import GameOverScreen from "./GameOverScreen";
 
-
 const { width, height } = Dimensions.get("window");
 
 interface Touch {
@@ -340,14 +339,26 @@ const MoveFinger = (entities: any, { touches, time, dispatch }: { touches: Touch
     return entities;
 };
 
-interface MoveFingerAnimationProps {
-    onExit: () => void;
-    mode: 'classic' | 'endless';
-    difficulty: 'easy' | 'medium' | 'hard';
-    fingerColor?: string;
-}
+import { useNavigation, useRoute } from '@react-navigation/native';
 
-const MoveFingerAnimation: React.FC<MoveFingerAnimationProps> = ({ onExit, mode, difficulty, fingerColor = '#00FFFF' }) => {
+// Removed MoveFingerAnimationProps interface
+
+const MoveFingerAnimation: React.FC = () => {
+    const navigation = useNavigation<any>();
+    const route = useRoute<any>();
+    const { mode, difficulty } = route.params || { mode: 'classic', difficulty: 'easy' };
+    const [fingerColor, setFingerColor] = useState('#00FFFF');
+
+    useEffect(() => {
+        const loadColor = async () => {
+            try {
+                const saved = await AsyncStorage.getItem('fingerColor');
+                if (saved) setFingerColor(saved);
+            } catch (e) { }
+        };
+        loadColor();
+    }, []);
+
     const { playSfx, playBombSfx } = useSound();
     const [running, setRunning] = useState(true);
     const [gameOver, setGameOver] = useState(false);
@@ -673,7 +684,7 @@ const MoveFingerAnimation: React.FC<MoveFingerAnimationProps> = ({ onExit, mode,
             )}
 
             {gameOver && (
-                <GameOverScreen score={score} stats={stats} onRestart={resetGame} onMenu={onExit} />
+                <GameOverScreen score={score} stats={stats} onRestart={resetGame} onMenu={() => navigation.goBack()} />
             )}
         </View>
     );

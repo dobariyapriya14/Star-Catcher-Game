@@ -2,12 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Switch, Dimensions, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useSound } from '../context/SoundContext';
-
-const { width } = Dimensions.get('window');
-
-interface Props {
-    onBack: () => void;
-}
+import { useNavigation } from '@react-navigation/native';
+import { SheetScreen } from 'react-native-sheet-transitions';
 
 const COLORS = [
     '#00FFFF', // Cyan (Default)
@@ -18,7 +14,10 @@ const COLORS = [
     '#FFFFFF', // White
 ];
 
-const SettingsScreen: React.FC<Props> = ({ onBack }) => {
+interface Props { }
+
+const SettingsScreen: React.FC<Props> = () => {
+    const navigation = useNavigation();
     const { isSoundEnabled, toggleSound, isSfxEnabled, toggleSfx } = useSound();
     const [selectedColor, setSelectedColor] = useState('#00FFFF');
 
@@ -53,10 +52,14 @@ const SettingsScreen: React.FC<Props> = ({ onBack }) => {
     };
 
     return (
-        <>
+        <SheetScreen
+            onClose={() => navigation.goBack()}
+            dragDirections={{ toBottom: true, toTop: false, toLeft: false, toRight: false }}
+            style={{ backgroundColor: 'transparent' }} // Container transparent, content handles BG
+        >
             <View style={styles.container}>
                 <View style={styles.header}>
-                    <TouchableOpacity onPress={onBack} style={styles.closeButton}>
+                    <TouchableOpacity onPress={() => navigation.goBack()} style={styles.closeButton}>
                         <Text style={styles.closeIcon}>‹</Text>
                     </TouchableOpacity>
                     <Text style={styles.headerTitle}>Settings</Text>
@@ -131,9 +134,10 @@ const SettingsScreen: React.FC<Props> = ({ onBack }) => {
                     <Text style={styles.stars}>★ ★ ★</Text>
                 </View>
             </View>
-        </>
+        </SheetScreen>
     );
 };
+
 
 const styles = StyleSheet.create({
     container: {

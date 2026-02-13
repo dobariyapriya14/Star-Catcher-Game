@@ -11,13 +11,14 @@ import Animated, {
 
 const { width, height } = Dimensions.get('window');
 
-interface Props {
-    onStartGame: (mode: 'classic' | 'endless', difficulty: 'easy' | 'medium' | 'hard') => void;
-    onSettings: () => void;
-    onViewScore: () => void;
-}
+import { useNavigation } from '@react-navigation/native';
 
+// Remove Props interface as it's no longer used
+interface Props { }
+
+// ... DifficultyButton component remains unchanged ...
 const DifficultyButton = ({ diff, difficulty, onPress }: any) => {
+    // ... same implementation ...
     const glowOpacity = useSharedValue(0.3);
     const glowScale = useSharedValue(1);
     const isActive = difficulty === diff;
@@ -102,7 +103,8 @@ const DifficultyButton = ({ diff, difficulty, onPress }: any) => {
     );
 };
 
-const GameMenuScreen: React.FC<Props> = ({ onStartGame, onSettings, onViewScore }) => {
+const GameMenuScreen: React.FC<Props> = () => {
+    const navigation = useNavigation<any>();
     const [difficulty, setDifficulty] = React.useState<'easy' | 'medium' | 'hard'>('easy');
 
     // Generate random stars for background
@@ -126,17 +128,21 @@ const GameMenuScreen: React.FC<Props> = ({ onStartGame, onSettings, onViewScore 
         });
     }, []);
 
+    const handleStartGame = (mode: 'classic' | 'endless') => {
+        navigation.navigate('Game', { mode, difficulty });
+    };
+
     return (
         <View style={styles.container}>
             {stars}
 
             {/* Header: Score (Left) & Settings (Right) */}
             <View style={styles.header}>
-                <TouchableOpacity style={styles.scoreButton} onPress={onViewScore}>
+                <TouchableOpacity style={styles.scoreButton} onPress={() => navigation.navigate('Score')}>
                     <Text style={styles.scoreButtonText}>🏆</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity style={styles.iconButton} onPress={onSettings}>
+                <TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('Settings')}>
                     <Text style={styles.settingsIcon}>⚙️</Text>
                 </TouchableOpacity>
             </View>
@@ -168,7 +174,7 @@ const GameMenuScreen: React.FC<Props> = ({ onStartGame, onSettings, onViewScore 
             <View style={styles.menuContainer}>
                 <TouchableOpacity
                     style={styles.startButton}
-                    onPress={() => onStartGame('classic', difficulty)}
+                    onPress={() => handleStartGame('classic')}
                 >
                     <Text style={styles.playIcon}>⏳</Text>
                     <View>
@@ -179,7 +185,7 @@ const GameMenuScreen: React.FC<Props> = ({ onStartGame, onSettings, onViewScore 
 
                 <TouchableOpacity
                     style={[styles.startButton, { backgroundColor: '#7C3AED' }]}
-                    onPress={() => onStartGame('endless', difficulty)}
+                    onPress={() => handleStartGame('endless')}
                 >
                     <Text style={styles.playIcon}>♾️</Text>
                     <View>

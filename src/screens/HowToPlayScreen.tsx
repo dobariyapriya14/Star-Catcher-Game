@@ -4,10 +4,10 @@ import { View, Text, StyleSheet, TouchableOpacity, Dimensions, FlatList, Animate
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = width - 40; // Horizontal padding 20 * 2
 
-interface Props {
-    onPlay: () => void;
-    onClose: () => void;
-}
+import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+interface Props { }
 
 const SLIDES = [
     {
@@ -33,7 +33,8 @@ const SLIDES = [
     }
 ];
 
-const HowToPlayScreen: React.FC<Props> = ({ onPlay, onClose }) => {
+const HowToPlayScreen: React.FC<Props> = () => {
+    const navigation = useNavigation<any>();
     const [currentIndex, setCurrentIndex] = useState(0);
     const flatListRef = useRef<FlatList>(null);
 
@@ -47,6 +48,15 @@ const HowToPlayScreen: React.FC<Props> = ({ onPlay, onClose }) => {
         itemVisiblePercentThreshold: 50,
     }).current;
 
+    const handleFinish = async () => {
+        try {
+            await AsyncStorage.setItem('hasSeenHowToPlay', 'true');
+        } catch (e) {
+            // Ignore error
+        }
+        navigation.replace('Menu');
+    };
+
     const handleNext = () => {
         if (currentIndex < SLIDES.length - 1) {
             flatListRef.current?.scrollToIndex({
@@ -54,7 +64,7 @@ const HowToPlayScreen: React.FC<Props> = ({ onPlay, onClose }) => {
                 animated: true,
             });
         } else {
-            onPlay();
+            handleFinish();
         }
     };
 
@@ -141,7 +151,7 @@ const HowToPlayScreen: React.FC<Props> = ({ onPlay, onClose }) => {
 
                 {/* Header */}
                 <View style={styles.header}>
-                    <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+                    <TouchableOpacity onPress={() => navigation.replace('Menu')} style={styles.closeButton}>
                         <Text style={styles.closeIcon}>✕</Text>
                     </TouchableOpacity>
                     <Text style={styles.headerTitle}>How to Play</Text>
