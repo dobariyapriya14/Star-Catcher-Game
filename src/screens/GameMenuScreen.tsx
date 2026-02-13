@@ -217,7 +217,6 @@ const styles = StyleSheet.create({
         paddingHorizontal: 10,
     },
     scoreButton: {
-        paddingHorizontal: 16,
         paddingVertical: 10,
         borderRadius: 20,
     },

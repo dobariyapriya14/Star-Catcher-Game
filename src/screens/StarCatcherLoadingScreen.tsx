@@ -4,9 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width, height } = Dimensions.get('window');
-
 interface Props {
-    // Navigation props are injected automatically or used via hook
 }
 
 const StarCatcherLoadingScreen: React.FC<Props> = () => {

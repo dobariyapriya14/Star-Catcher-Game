@@ -202,7 +202,7 @@ const styles = StyleSheet.create({
     },
     closeIcon: {
         color: '#3B82F6',
-        fontSize: 32,
+        fontSize: 40,
         fontWeight: 'bold',
     },
     headerTitle: {

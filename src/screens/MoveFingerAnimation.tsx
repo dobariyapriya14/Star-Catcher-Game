@@ -309,7 +309,7 @@ const MoveFinger = (entities: any, { touches, time, dispatch }: { touches: Touch
     // Update Timer (Only for Classic Mode)
     if (score.mode === 'classic') {
         if (score && score.time > 0) {
-            score.time -= 0.05; // Increased timer speed
+            score.time -= 0.02; // Increased timer speed
         } else if (score && score.time <= 0) {
             // Time's up! Dispatch Game Over
             dispatch({

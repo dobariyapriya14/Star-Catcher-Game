@@ -52,7 +52,6 @@ const HowToPlayScreen: React.FC<Props> = () => {
         try {
             await AsyncStorage.setItem('hasSeenHowToPlay', 'true');
         } catch (e) {
-            // Ignore error
         }
         navigation.replace('Menu');
     };

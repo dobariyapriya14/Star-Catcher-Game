@@ -55,6 +55,8 @@ const SettingsScreen: React.FC<Props> = () => {
         <SheetScreen
             onClose={() => navigation.goBack()}
             dragDirections={{ toBottom: true, toTop: false, toLeft: false, toRight: false }}
+            opacityOnGestureMove={true}
+            containerRadiusSync={true}
             style={{ backgroundColor: 'transparent' }} // Container transparent, content handles BG
         >
             <View style={styles.container}>
@@ -160,7 +162,7 @@ const styles = StyleSheet.create({
     },
     closeIcon: {
         color: '#3B82F6',
-        fontSize: 32,
+        fontSize: 40,
         fontWeight: 'bold',
     },
     headerTitle: {
