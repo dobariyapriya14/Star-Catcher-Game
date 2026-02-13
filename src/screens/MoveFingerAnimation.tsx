@@ -21,6 +21,7 @@ interface Touch {
 
 const MoveFinger = (entities: any, { touches, time, dispatch }: { touches: Touch[], time: { delta: number }, dispatch: any }) => {
     const score = entities["score"];
+    const difficulty = score?.difficulty || 'easy';
 
     //-- First, move the "head" (entity 1) based on user touch
     touches.filter(t => t.type === "move").forEach(t => {
@@ -70,108 +71,201 @@ const MoveFinger = (entities: any, { touches, time, dispatch }: { touches: Touch
         }
     }
 
-    //-- Collision Detection with Star
+    //-- Collision Detection with Stars
     const head = entities[1];
-    const star = entities["star"];
+    const starKeys = Object.keys(entities).filter(k => k.startsWith('star_'));
 
     // Initialize/Update Lives
     score.lives = (score.lives !== undefined) ? score.lives : 3;
 
-    // Star Lifetime Logic
-    const dt = 0.016;
-    star.lifetime = (star.lifetime !== undefined) ? star.lifetime - dt : 3.0;
+    starKeys.forEach(key => {
+        const star = entities[key];
+        const dt = 0.016;
+        star.lifetime = (star.lifetime !== undefined) ? star.lifetime - dt : 3.0;
 
-    if (star.lifetime <= 0) {
-        // Star Timeout - Missed a star!
-        if (star.type !== 'bomb') {
-            score.lives -= 1;
-        }
+        if (star.lifetime <= 0) {
+            // Star Timeout - Missed a star!
+            if (star.type !== 'bomb') {
+                score.lives -= 1;
+            }
 
-        // Respawn
-        const safeTop = 200;
-        const safeBottom = height - 150;
-        star.position = [
-            Math.random() * (width - 40) + 20,
-            Math.random() * (safeBottom - safeTop) + safeTop
-        ];
-        star.lifetime = 3.0; // Reset lifetime
+            // Respawn
+            const safeTop = 200;
+            const safeBottom = height - 150;
+            star.position = [
+                Math.random() * (width - 40) + 20,
+                Math.random() * (safeBottom - safeTop) + safeTop
+            ];
 
-        const ran = Math.random();
-        if (ran < 0.6) star.type = 'normal';
-        else if (ran < 0.7) star.type = 'golden';
-        else if (ran < 0.8) star.type = 'rainbow';
-        else if (ran < 0.9 && score.lives < 3) star.type = 'heart'; // Only spawn heart if lives < 3
-        else star.type = 'bomb';
+            // Reset Lifetime based on difficulty
+            if (difficulty === 'hard') star.lifetime = 2.0;
+            else if (difficulty === 'medium') star.lifetime = 2.5;
+            else star.lifetime = 3.0;
 
-        // Check Game Over by lives
-        if (score.lives <= 0) {
-            dispatch({
-                type: "game-over",
-                score: score.score,
-                stats: {
-                    stars: score.collectedStars || 0,
-                    rainbows: score.collectedRainbows || 0,
-                    bombs: score.collectedBombs || 0,
-                    hearts: score.collectedHearts || 0,
-                    goldens: score.collectedGoldens || 0,
-                    pointsStars: score.pointsStars || 0,
-                    pointsRainbows: score.pointsRainbows || 0,
-                    pointsBombs: score.pointsBombs || 0,
-                    pointsHearts: score.pointsHearts || 0,
-                    pointsGoldens: score.pointsGoldens || 0
-                }
-            });
-            score.time = 0;
-        }
-    }
-
-    // Update Renderer (Ensure lives are updated)
-    score.renderer = <Score score={score.score} time={score.time} lives={score.lives} mode={score.mode} />;
-
-    // Update Timer (Only for Classic Mode)
-    if (score.mode === 'classic') {
-        if (score && score.time > 0) {
-            score.time -= 0.03;
-        } else if (score && score.time <= 0) {
-            // Time's up! Dispatch Game Over
-            dispatch({
-                type: "game-over",
-                score: score.score,
-                stats: {
-                    stars: score.collectedStars || 0,
-                    rainbows: score.collectedRainbows || 0,
-                    bombs: score.collectedBombs || 0,
-                    hearts: score.collectedHearts || 0,
-                    goldens: score.collectedGoldens || 0,
-                    pointsStars: score.pointsStars || 0,
-                    pointsRainbows: score.pointsRainbows || 0,
-                    pointsBombs: score.pointsBombs || 0,
-                    pointsHearts: score.pointsHearts || 0,
-                    pointsGoldens: score.pointsGoldens || 0
-                }
-            });
-            // Prevent multiple dispatches or weird negative time
-            score.time = 0;
-        }
-    }
-
-    // Bomb timer logic: if bomb is active for > 1500ms, change it
-    if (star && star.type === 'bomb') {
-        const dt = time.delta || 16; // default 16ms if undefined
-        star.bombTimer = (star.bombTimer || 0) + dt;
-
-        if (star.bombTimer > 1500) {
-            // Change to a new random type
             const ran = Math.random();
-            if (ran < 0.4) star.type = 'normal';
-            else if (ran < 0.6) star.type = 'golden';
-            else if (ran < 0.8) star.type = 'rainbow';
-            else star.type = 'bomb';
+            if (difficulty === 'medium' || difficulty === 'hard') {
+                // More goldens/rainbows/bombs in medium/hard
+                if (ran < 0.4) star.type = 'normal';
+                else if (ran < 0.6) star.type = 'golden';
+                else if (ran < 0.8) star.type = 'rainbow';
+                else if (ran < 0.9 && score.lives < 3) star.type = 'heart';
+                else star.type = 'bomb';
+            } else {
+                // Easy / Default
+                if (ran < 0.6) star.type = 'normal';
+                else if (ran < 0.7) star.type = 'golden';
+                else if (ran < 0.8) star.type = 'rainbow';
+                else if (ran < 0.9 && score.lives < 3) star.type = 'heart';
+                else star.type = 'bomb';
+            }
 
-            // Reset timer
-            star.bombTimer = 0;
+            // Check Game Over by lives
+            if (score.lives <= 0) {
+                dispatch({
+                    type: "game-over",
+                    score: score.score,
+                    stats: {
+                        stars: score.collectedStars || 0,
+                        rainbows: score.collectedRainbows || 0,
+                        bombs: score.collectedBombs || 0,
+                        hearts: score.collectedHearts || 0,
+                        goldens: score.collectedGoldens || 0,
+                        pointsStars: score.pointsStars || 0,
+                        pointsRainbows: score.pointsRainbows || 0,
+                        pointsBombs: score.pointsBombs || 0,
+                        pointsHearts: score.pointsHearts || 0,
+                        pointsGoldens: score.pointsGoldens || 0
+                    }
+                });
+                score.time = 0;
+            }
         }
-    }
+
+        // Bomb timer logic
+        if (star.type === 'bomb') {
+            const dt = time.delta || 16;
+            star.bombTimer = (star.bombTimer || 0) + dt;
+
+            if (star.bombTimer > 1500) {
+                const ran = Math.random();
+                if (ran < 0.4) star.type = 'normal';
+                else if (ran < 0.6) star.type = 'golden';
+                else if (ran < 0.8) star.type = 'rainbow';
+                else star.type = 'bomb';
+                star.bombTimer = 0;
+            }
+        }
+
+        // Collision Check
+        if (head && score) {
+            const dx = head.position[0] - star.position[0];
+            const dy = head.position[1] - star.position[1];
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            if (distance < 30 && (score.mode === 'endless' || score.time > 0)) {
+                const collectedType = star.type || 'normal';
+
+                // Play SFX
+                if (entities.audio) {
+                    if (collectedType === 'bomb') {
+                        if (entities.audio.playBombSfx) entities.audio.playBombSfx();
+                    } else if (entities.audio.playSfx) {
+                        entities.audio.playSfx();
+                    }
+                }
+
+                // Stats init
+                score.collectedStars = score.collectedStars || 0;
+                score.collectedRainbows = score.collectedRainbows || 0;
+                score.collectedBombs = score.collectedBombs || 0;
+                score.pointsStars = score.pointsStars || 0;
+                score.pointsRainbows = score.pointsRainbows || 0;
+                score.pointsBombs = score.pointsBombs || 0;
+                score.collectedHearts = score.collectedHearts || 0;
+                score.pointsHearts = score.pointsHearts || 0;
+                score.collectedGoldens = score.collectedGoldens || 0;
+                score.pointsGoldens = score.pointsGoldens || 0;
+
+                // Apply Effects
+                if (collectedType === 'golden') {
+                    score.score += 5;
+                    score.collectedGoldens += 1;
+                    score.pointsGoldens += 5;
+                } else if (collectedType === 'rainbow') {
+                    score.score += 3;
+                    score.slowMotionTimer = 3;
+                    score.collectedRainbows += 1;
+                    score.pointsRainbows += 3;
+                } else if (collectedType === 'bomb') {
+                    score.score -= 2;
+                    score.collectedBombs += 1;
+                    score.pointsBombs += 2;
+                    dispatch({ type: "bomb-hit" });
+                } else if (collectedType === 'heart') {
+                    score.lives = Math.min((score.lives || 0) + 1, 3);
+                    score.score += 10;
+                    score.collectedHearts += 1;
+                    score.pointsHearts += 10;
+                    dispatch({ type: "heart-hit" });
+                } else {
+                    score.score += 1;
+                    score.collectedStars += 1;
+                    score.pointsStars += 1;
+                }
+
+                // Grow Snake (unless bomb)
+                if (collectedType !== 'bomb') {
+                    const lastId = ids[ids.length - 1];
+                    const lastSegment = entities[lastId];
+                    const newId = lastId + 1;
+                    entities[newId] = {
+                        position: [lastSegment.position[0], lastSegment.position[1]],
+                        color: entities[1].color,
+                        renderer: <Finger />
+                    };
+                }
+
+                // Respawn
+                const safeTop = 200;
+                const safeBottom = height - 150;
+                star.position = [
+                    Math.random() * (width - 40) + 20,
+                    Math.random() * (safeBottom - safeTop) + safeTop
+                ];
+                star.bombTimer = 0;
+
+                // Difficulty Scaling for Endless Mode (overrides fixed difficulty for endless?)
+                // Just combine them or keep endless scaling logic
+                if (score.mode === 'endless') {
+                    const difficultyFactor = Math.min(Math.floor(score.score / 10) * 0.1, 1.8);
+                    // Base lifetime depends on difficulty mode
+                    const base = difficulty === 'hard' ? 1.5 : difficulty === 'medium' ? 2.0 : 3.0;
+                    star.lifetime = Math.max(base - difficultyFactor, 1.0);
+                } else {
+                    if (difficulty === 'hard') star.lifetime = 2.0;
+                    else if (difficulty === 'medium') star.lifetime = 2.5;
+                    else star.lifetime = 3.0; // Classic Reset
+                }
+
+                const ran = Math.random();
+                if (difficulty === 'medium' || difficulty === 'hard') {
+                    if (ran < 0.4) star.type = 'normal';
+                    else if (ran < 0.6) star.type = 'golden';
+                    else if (ran < 0.8) star.type = 'rainbow';
+                    else if (ran < 0.9 && score.lives < 3) star.type = 'heart';
+                    else star.type = 'bomb';
+                } else {
+                    if (ran < 0.6) star.type = 'normal';
+                    else if (ran < 0.7) star.type = 'golden';
+                    else if (ran < 0.8) star.type = 'rainbow';
+                    else if (ran < 0.9 && score.lives < 3) star.type = 'heart';
+                    else star.type = 'bomb';
+                }
+
+                score.renderer = <Score score={score.score} time={score.time} lives={score.lives} mode={score.mode} />;
+            }
+        }
+    });
 
     //-- Check for Manual Stop Signal (Start Button / Pause Menu Exit)
     const control = entities["control"];
@@ -198,108 +292,37 @@ const MoveFinger = (entities: any, { touches, time, dispatch }: { touches: Touch
         score.time = 0;
     }
 
-    if (head && star && score) {
-        const dx = head.position[0] - star.position[0];
-        const dy = head.position[1] - star.position[1];
-        const distance = Math.sqrt(dx * dx + dy * dy);
 
-        // Check collision (adjust 30 based on sizes)
-        if (distance < 30 && (score.mode === 'endless' || score.time > 0)) {
-            const collectedType = star.type || 'normal';
 
-            // Play SFX based on type
-            if (entities.audio) {
-                if (collectedType === 'bomb') {
-                    if (entities.audio.playBombSfx) entities.audio.playBombSfx();
-                } else if (entities.audio.playSfx) {
-                    entities.audio.playSfx();
+    // Update Timer (Only for Classic Mode)
+    if (score.mode === 'classic') {
+        if (score && score.time > 0) {
+            score.time -= 0.03; // Adjusted for roughly 30fps/real-time feel
+        } else if (score && score.time <= 0) {
+            // Time's up! Dispatch Game Over
+            dispatch({
+                type: "game-over",
+                score: score.score,
+                stats: {
+                    stars: score.collectedStars || 0,
+                    rainbows: score.collectedRainbows || 0,
+                    bombs: score.collectedBombs || 0,
+                    hearts: score.collectedHearts || 0,
+                    goldens: score.collectedGoldens || 0,
+                    pointsStars: score.pointsStars || 0,
+                    pointsRainbows: score.pointsRainbows || 0,
+                    pointsBombs: score.pointsBombs || 0,
+                    pointsHearts: score.pointsHearts || 0,
+                    pointsGoldens: score.pointsGoldens || 0
                 }
-            }
-
-            // Initialize stats if missing
-            score.collectedStars = score.collectedStars || 0;
-            score.collectedRainbows = score.collectedRainbows || 0;
-            score.collectedBombs = score.collectedBombs || 0;
-
-            score.pointsStars = score.pointsStars || 0;
-            score.pointsRainbows = score.pointsRainbows || 0;
-            score.pointsBombs = score.pointsBombs || 0;
-            score.collectedHearts = score.collectedHearts || 0;
-            score.pointsHearts = score.pointsHearts || 0;
-            score.collectedGoldens = score.collectedGoldens || 0;
-            score.pointsGoldens = score.pointsGoldens || 0;
-
-            // Apply Effects
-            if (collectedType === 'golden') {
-                score.score += 5;
-                // score.time += 5;
-                score.collectedGoldens += 1;
-                score.pointsGoldens += 5;
-            } else if (collectedType === 'rainbow') {
-                score.score += 3;
-                score.slowMotionTimer = 3;
-                score.collectedRainbows += 1;
-                score.pointsRainbows += 3;
-            } else if (collectedType === 'bomb') {
-                score.score -= 2;
-                score.collectedBombs += 1;
-                score.pointsBombs += 2;
-
-                // Dispatch bomb hit event for animation
-                dispatch({ type: "bomb-hit" });
-            } else if (collectedType === 'heart') {
-                score.lives = Math.min((score.lives || 0) + 1, 3);
-                score.score += 10;
-                score.collectedHearts += 1;
-                score.pointsHearts += 10;
-                dispatch({ type: "heart-hit" });
-            } else {
-                score.score += 1;
-                score.collectedStars += 1;
-                score.pointsStars += 1;
-            }
-
-            // Grow Snake (unless bomb)
-            if (collectedType !== 'bomb') {
-                const lastId = ids[ids.length - 1];
-                const lastSegment = entities[lastId];
-                const newId = lastId + 1;
-
-                entities[newId] = {
-                    position: [lastSegment.position[0], lastSegment.position[1]],
-                    color: entities[1].color,
-                    renderer: <Finger />
-                };
-            }
-
-            // Respawn - Generate random position avoiding the top score area and bottom controls
-            const safeTop = 200;
-            const safeBottom = height - 150; // Avoid bottom controls
-
-            star.position = [
-                Math.random() * (width - 40) + 20,
-                Math.random() * (safeBottom - safeTop) + safeTop
-            ];
-            star.bombTimer = 0; // Reset bomb timer for new spawn
-            // Difficulty Scaling for Endless Mode
-            if (score.mode === 'endless') {
-                const difficultyFactor = Math.min(Math.floor(score.score / 10) * 0.1, 1.8);
-                star.lifetime = Math.max(3.0 - difficultyFactor, 1.2);
-            } else {
-                star.lifetime = 3.0; // Reset lifetime (Classic constant)
-            }
-
-            const ran = Math.random();
-            if (ran < 0.6) star.type = 'normal';
-            else if (ran < 0.7) star.type = 'golden';
-            else if (ran < 0.8) star.type = 'rainbow';
-            else if (ran < 0.9 && score.lives < 3) star.type = 'heart'; // Only spawn heart if lives < 3
-            else star.type = 'bomb';
-
-            // Re-render score immediately
-            score.renderer = <Score score={score.score} time={score.time} lives={score.lives} mode={score.mode} />;
+            });
+            // Prevent multiple dispatches or weird negative time
+            score.time = 0;
         }
     }
+
+    // Always update renderer with latest time
+    score.renderer = <Score score={score.score} time={score.time} lives={score.lives} mode={score.mode} />;
 
     return entities;
 };
@@ -307,10 +330,11 @@ const MoveFinger = (entities: any, { touches, time, dispatch }: { touches: Touch
 interface MoveFingerAnimationProps {
     onExit: () => void;
     mode: 'classic' | 'endless';
+    difficulty: 'easy' | 'medium' | 'hard';
     fingerColor?: string;
 }
 
-const MoveFingerAnimation: React.FC<MoveFingerAnimationProps> = ({ onExit, mode, fingerColor = '#00FFFF' }) => {
+const MoveFingerAnimation: React.FC<MoveFingerAnimationProps> = ({ onExit, mode, difficulty, fingerColor = '#00FFFF' }) => {
     const { playSfx, playBombSfx } = useSound();
     const [running, setRunning] = useState(true);
     const [gameOver, setGameOver] = useState(false);
@@ -477,6 +501,20 @@ const MoveFingerAnimation: React.FC<MoveFingerAnimationProps> = ({ onExit, mode,
             pointsHearts: 0,
             pointsGoldens: 0
         });
+        const stars: any = {};
+        const maxStars = difficulty === 'hard' ? 3 : difficulty === 'medium' ? 2 : 1;
+        for (let i = 0; i < maxStars; i++) {
+            stars[`star_${i}`] = {
+                position: [
+                    Math.random() * (width - 40) + 20,
+                    Math.random() * (height - 350) + 200 // Initial safe area
+                ],
+                type: 'normal',
+                lifetime: difficulty === 'hard' ? 3.0 : difficulty === 'medium' ? 3.5 : 4.0,
+                renderer: <Star position={[0, 0]} />
+            };
+        }
+
         // Force reset entities
         if (engineRef.current) {
             (engineRef.current as any).swap({
@@ -487,12 +525,14 @@ const MoveFingerAnimation: React.FC<MoveFingerAnimationProps> = ({ onExit, mode,
                 3: { position: [width / 2, height - 150], color: fingerColor, renderer: <Finger /> },
                 4: { position: [width / 2, height - 150], color: fingerColor, renderer: <Finger /> },
                 5: { position: [width / 2, height - 150], color: fingerColor, renderer: <Finger /> },
-                star: { position: [200, 300], type: 'normal', renderer: <Star position={[0, 0]} /> },
+                // star: { position: [200, 300], type: 'normal', renderer: <Star position={[0, 0]} /> }, // REMOVE old star
+                ...stars, // Add new multiple stars
                 score: {
                     score: 0,
                     time: mode === 'classic' ? 60 : 0,
                     lives: 3,
                     mode: mode,
+                    difficulty: difficulty,
                     slowMotionTimer: 0,
                     collectedStars: 0,
                     collectedRainbows: 0,
@@ -525,12 +565,14 @@ const MoveFingerAnimation: React.FC<MoveFingerAnimationProps> = ({ onExit, mode,
                         3: { position: [width / 2, height - 150], color: fingerColor, renderer: <Finger /> },
                         4: { position: [width / 2, height - 150], color: fingerColor, renderer: <Finger /> },
                         5: { position: [width / 2, height - 150], color: fingerColor, renderer: <Finger /> },
-                        star: { position: [200, 300], type: 'normal', renderer: <Star position={[0, 0]} /> },
+
+                        // star: { position: [200, 300], type: 'normal', renderer: <Star position={[0, 0]} /> }, 
                         score: {
                             score: 0,
                             time: mode === 'classic' ? 60 : 0,
                             lives: 3,
                             mode: mode,
+                            difficulty: difficulty,
                             slowMotionTimer: 0,
                             collectedStars: 0,
                             collectedRainbows: 0,
@@ -538,7 +580,24 @@ const MoveFingerAnimation: React.FC<MoveFingerAnimationProps> = ({ onExit, mode,
                             collectedHearts: 0,
                             collectedGoldens: 0,
                             renderer: <Score score={0} time={mode === 'classic' ? 60 : 0} lives={3} mode={mode} />
-                        }
+                        },
+                        // Initial stars based on difficulty
+                        ...(() => {
+                            const stars: any = {};
+                            const maxStars = difficulty === 'hard' ? 3 : difficulty === 'medium' ? 2 : 1;
+                            for (let i = 0; i < maxStars; i++) {
+                                stars[`star_${i}`] = {
+                                    position: [
+                                        Math.random() * (width - 40) + 20,
+                                        Math.random() * (height - 350) + 200
+                                    ],
+                                    type: 'normal',
+                                    lifetime: difficulty === 'hard' ? 2.0 : difficulty === 'medium' ? 2.5 : 3.0,
+                                    renderer: <Star position={[0, 0]} />
+                                };
+                            }
+                            return stars;
+                        })()
                     }}>
 
                 </GameEngine>

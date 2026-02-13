@@ -4,12 +4,14 @@ import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-nati
 const { width, height } = Dimensions.get('window');
 
 interface Props {
-    onStartGame: (mode: 'classic' | 'endless') => void;
+    onStartGame: (mode: 'classic' | 'endless', difficulty: 'easy' | 'medium' | 'hard') => void;
     onSettings: () => void;
     onViewScore: () => void;
 }
 
 const GameMenuScreen: React.FC<Props> = ({ onStartGame, onSettings, onViewScore }) => {
+    const [difficulty, setDifficulty] = React.useState<'easy' | 'medium' | 'hard'>('easy');
+
     // Generate random stars for background (Static, created once)
     const stars = useMemo(() => {
         return Array.from({ length: 50 }).map((_, i) => {
@@ -54,9 +56,35 @@ const GameMenuScreen: React.FC<Props> = ({ onStartGame, onSettings, onViewScore 
                     <Text style={styles.mainTitle}>CATCHER</Text>
                 </View>
 
+                {/* Difficulty Selector */}
+                <View style={styles.difficultyContainer}>
+                    <Text style={styles.sectionTitle}>SELECT DIFFICULTY</Text>
+                    <View style={styles.difficultyButtons}>
+                        {(['easy', 'medium', 'hard'] as const).map((diff) => (
+                            <TouchableOpacity
+                                key={diff}
+                                style={[
+                                    styles.difficultyButton,
+                                    difficulty === diff && styles.difficultyButtonActive,
+                                    difficulty === diff && { borderColor: diff === 'easy' ? '#10B981' : diff === 'medium' ? '#F59E0B' : '#EF4444' }
+                                ]}
+                                onPress={() => setDifficulty(diff)}
+                            >
+                                <Text style={[
+                                    styles.difficultyText,
+                                    difficulty === diff && styles.difficultyTextActive,
+                                    difficulty === diff && { color: diff === 'easy' ? '#10B981' : diff === 'medium' ? '#F59E0B' : '#EF4444' }
+                                ]}>
+                                    {diff.toUpperCase()}
+                                </Text>
+                            </TouchableOpacity>
+                        ))}
+                    </View>
+                </View>
+
                 {/* Menu Buttons */}
                 <View style={styles.menuContainer}>
-                    <TouchableOpacity style={styles.startButton} onPress={() => onStartGame('classic')}>
+                    <TouchableOpacity style={styles.startButton} onPress={() => onStartGame('classic', difficulty)}>
                         <Text style={styles.playIcon}>⏳</Text>
                         <View>
                             <Text style={styles.startButtonText}>CLASSIC MODE</Text>
@@ -64,7 +92,7 @@ const GameMenuScreen: React.FC<Props> = ({ onStartGame, onSettings, onViewScore 
                         </View>
                     </TouchableOpacity>
 
-                    <TouchableOpacity style={[styles.startButton, { backgroundColor: '#7C3AED' }]} onPress={() => onStartGame('endless')}>
+                    <TouchableOpacity style={[styles.startButton, { backgroundColor: '#7C3AED' }]} onPress={() => onStartGame('endless', difficulty)}>
                         <Text style={styles.playIcon}>♾️</Text>
                         <View>
                             <Text style={styles.startButtonText}>ENDLESS MODE</Text>
@@ -302,6 +330,48 @@ const styles = StyleSheet.create({
         fontSize: 12,
         fontWeight: '600',
         letterSpacing: 1,
+    },
+    difficultyContainer: {
+        width: '100%',
+        alignItems: 'center',
+        marginBottom: 30,
+    },
+    sectionTitle: {
+        color: '#6B7280',
+        fontSize: 12,
+        fontWeight: '700',
+        letterSpacing: 2,
+        marginBottom: 15,
+    },
+    difficultyButtons: {
+        flexDirection: 'row',
+        width: '100%',
+        justifyContent: 'space-between',
+        gap: 10,
+    },
+    difficultyButton: {
+        flex: 1,
+        paddingVertical: 12,
+        borderRadius: 15,
+        backgroundColor: 'rgba(255, 255, 255, 0.05)',
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.1)',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    difficultyButtonActive: {
+        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+        borderWidth: 2,
+    },
+    difficultyText: {
+        color: '#9CA3AF',
+        fontSize: 12,
+        fontWeight: '700',
+        letterSpacing: 1,
+    },
+    difficultyTextActive: {
+        fontSize: 12,
+        fontWeight: '800',
     }
 });
 

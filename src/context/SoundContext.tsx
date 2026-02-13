@@ -15,8 +15,8 @@ interface SoundContextType {
 const SoundContext = createContext<SoundContextType | undefined>(undefined);
 
 export const SoundProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [isSoundEnabled, setIsSoundEnabled] = useState(false);
-    const [isSfxEnabled, setIsSfxEnabled] = useState(false);
+    const [isSoundEnabled, setIsSoundEnabled] = useState(true);
+    const [isSfxEnabled, setIsSfxEnabled] = useState(true);
     const [isSoundLoaded, setIsSoundLoaded] = useState(false);
     const [isSfxLoaded, setIsSfxLoaded] = useState(false);
     const [isBombSfxLoaded, setIsBombSfxLoaded] = useState(false);
@@ -24,7 +24,7 @@ export const SoundProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const soundRef = useRef<Sound | null>(null);
     const sfxRef = useRef<Sound | null>(null);
     const bombSfxRef = useRef<Sound | null>(null);
-    const sfxEnabledRef = useRef(false);
+    const sfxEnabledRef = useRef(true);
 
     // load sound preferences on mount
     useEffect(() => {
@@ -53,7 +53,6 @@ export const SoundProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         const soundFile = Platform.OS === 'android' ? 'dali' : 'dali.mp3';
         const sound = new Sound(soundFile, Sound.MAIN_BUNDLE, (error) => {
             if (error) {
-                console.log('❌ Context Music load failed', error);
                 return;
             }
             sound.setNumberOfLoops(-1); // Infinite loop

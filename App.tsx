@@ -16,6 +16,7 @@ import ScoreScreen from './src/screens/ScoreScreen';
 const MainContent = () => {
   const [currentScreen, setCurrentScreen] = React.useState<'loading' | 'howToPlay' | 'menu' | 'settings' | 'game' | 'score'>('loading');
   const [gameMode, setGameMode] = React.useState<'classic' | 'endless'>('classic');
+  const [difficulty, setDifficulty] = React.useState<'easy' | 'medium' | 'hard'>('easy');
   const [fingerColor, setFingerColor] = React.useState('#00FFFF');
 
   const checkFirstLaunch = async () => {
@@ -73,7 +74,7 @@ const MainContent = () => {
     } catch (e) {
       // Ignore error
     }
-    setCurrentScreen('game');
+    setCurrentScreen('menu');
   };
 
   if (currentScreen === 'howToPlay') {
@@ -88,8 +89,9 @@ const MainContent = () => {
   if (currentScreen === 'menu') {
     return (
       <GameMenuScreen
-        onStartGame={(mode) => {
+        onStartGame={(mode, difficulty) => {
           setGameMode(mode);
+          setDifficulty(difficulty);
           setCurrentScreen('game');
         }}
         onSettings={() => setCurrentScreen('settings')}
@@ -107,7 +109,7 @@ const MainContent = () => {
   }
 
   return (
-    <MoveFingerAnimation mode={gameMode} fingerColor={fingerColor} onExit={() => setCurrentScreen('menu')} />
+    <MoveFingerAnimation mode={gameMode} difficulty={difficulty} fingerColor={fingerColor} onExit={() => setCurrentScreen('menu')} />
   );
 };
 
