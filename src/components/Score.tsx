@@ -6,11 +6,12 @@ interface ScoreProps {
     time: number;
     lives: number;
     mode?: 'classic' | 'endless';
+    difficulty?: 'easy' | 'medium' | 'hard';
 }
 
 const { width } = Dimensions.get("window");
 
-const Score = ({ score, time, lives, mode = 'classic' }: ScoreProps) => {
+const Score = ({ score, time, lives, mode = 'classic', difficulty }: ScoreProps) => {
     // simple clamp 0..1
     const progress = Math.min(Math.max(time / 60, 0), 1);
 
@@ -26,7 +27,7 @@ const Score = ({ score, time, lives, mode = 'classic' }: ScoreProps) => {
             <View style={styles.headerRow}>
                 {/* Score Section */}
                 <View>
-                    <Text style={styles.label}>SCORE</Text>
+                    <Text style={styles.label}>SCORE ({difficulty?.toUpperCase()})</Text>
                     <Text style={styles.valueText}>
                         {score.toLocaleString()}
                     </Text>

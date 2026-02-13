@@ -27,7 +27,7 @@ const DifficultyButton = ({ diff, difficulty, onPress }: any) => {
             glowOpacity.value = withRepeat(
                 withSequence(
                     withTiming(0.8, { duration: 1000, easing: Easing.inOut(Easing.ease) }),
-                    withTiming(0.3, { duration: 1000, easing: Easing.inOut(Easing.ease) })
+                    withTiming(0.6, { duration: 1000, easing: Easing.inOut(Easing.ease) })
                 ),
                 -1,
                 false
@@ -314,8 +314,8 @@ const styles = StyleSheet.create({
     glowBorder: {
         position: 'absolute',
         top: -2,
-        left: -2,
-        right: -2,
+        left: 0,
+        right: 0,
         bottom: -2,
         borderRadius: 17,
         borderWidth: 3,

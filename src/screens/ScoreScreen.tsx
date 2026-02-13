@@ -20,6 +20,7 @@ interface ScoreEntry {
     score: number;
     date: string;
     mode: 'classic' | 'endless';
+    difficulty?: 'easy' | 'medium' | 'hard';
     stats?: ScoreStats;
 }
 
@@ -92,7 +93,9 @@ const ScoreScreen: React.FC<Props> = ({ onBack }) => {
                     </View>
                     <View style={styles.scoreDetails}>
                         <Text style={styles.scoreValue}>{item.score.toLocaleString()}</Text>
-                        <Text style={styles.scoreDate}>{new Date(item.date).toLocaleDateString()} • {item.mode.toUpperCase()}</Text>
+                        <Text style={styles.scoreDate}>
+                            {new Date(item.date).toLocaleDateString()} • {item.mode.toUpperCase()} {item.difficulty ? `• ${item.difficulty.toUpperCase()}` : ''}
+                        </Text>
                     </View>
 
                 </View>

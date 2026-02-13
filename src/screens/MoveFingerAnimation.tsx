@@ -32,8 +32,9 @@ const MoveFinger = (entities: any, { touches, time, dispatch }: { touches: Touch
 
             // Allow full screen but clamp to edges
             const RADIUS = 25; // Finger radius
+            const SAFE_TOP_MARGIN = 160; // Avoid Score/Timer area
             const clampedX = Math.max(RADIUS, Math.min(width - RADIUS, nextX));
-            const clampedY = Math.max(RADIUS, Math.min(height - RADIUS, nextY));
+            const clampedY = Math.max(RADIUS + SAFE_TOP_MARGIN, Math.min(height - RADIUS, nextY));
 
             head.position = [clampedX, clampedY];
         }
@@ -97,11 +98,6 @@ const MoveFinger = (entities: any, { touches, time, dispatch }: { touches: Touch
                 Math.random() * (safeBottom - safeTop) + safeTop
             ];
 
-            // Reset Lifetime based on difficulty
-            if (difficulty === 'hard') star.lifetime = 2.0;
-            else if (difficulty === 'medium') star.lifetime = 2.5;
-            else star.lifetime = 3.0;
-
             const ran = Math.random();
             if (difficulty === 'medium' || difficulty === 'hard') {
                 // More goldens/rainbows/bombs in medium/hard
@@ -118,6 +114,17 @@ const MoveFinger = (entities: any, { touches, time, dispatch }: { touches: Touch
                 else if (ran < 0.9 && score.lives < 3) star.type = 'heart';
                 else star.type = 'bomb';
             }
+
+            // Reset Lifetime based on difficulty
+            if (difficulty === 'hard') {
+                if (star.type === 'golden' || star.type === 'rainbow') {
+                    star.lifetime = 3.0; // Longer duration for special stars in hard mode
+                } else {
+                    star.lifetime = 2.0;
+                }
+            }
+            else if (difficulty === 'medium') star.lifetime = 2.5;
+            else star.lifetime = 3.0;
 
             // Check Game Over by lives
             if (score.lives <= 0) {
@@ -236,17 +243,6 @@ const MoveFinger = (entities: any, { touches, time, dispatch }: { touches: Touch
 
                 // Difficulty Scaling for Endless Mode (overrides fixed difficulty for endless?)
                 // Just combine them or keep endless scaling logic
-                if (score.mode === 'endless') {
-                    const difficultyFactor = Math.min(Math.floor(score.score / 10) * 0.1, 1.8);
-                    // Base lifetime depends on difficulty mode
-                    const base = difficulty === 'hard' ? 1.5 : difficulty === 'medium' ? 2.0 : 3.0;
-                    star.lifetime = Math.max(base - difficultyFactor, 1.0);
-                } else {
-                    if (difficulty === 'hard') star.lifetime = 2.0;
-                    else if (difficulty === 'medium') star.lifetime = 2.5;
-                    else star.lifetime = 3.0; // Classic Reset
-                }
-
                 const ran = Math.random();
                 if (difficulty === 'medium' || difficulty === 'hard') {
                     if (ran < 0.4) star.type = 'normal';
@@ -262,7 +258,26 @@ const MoveFinger = (entities: any, { touches, time, dispatch }: { touches: Touch
                     else star.type = 'bomb';
                 }
 
-                score.renderer = <Score score={score.score} time={score.time} lives={score.lives} mode={score.mode} />;
+                // Difficulty Scaling for Endless Mode (overrides fixed difficulty for endless?)
+                // Just combine them or keep endless scaling logic
+                if (score.mode === 'endless') {
+                    const difficultyFactor = Math.min(Math.floor(score.score / 10) * 0.1, 1.8);
+                    // Base lifetime depends on difficulty mode
+                    const base = difficulty === 'hard' ? 1.5 : difficulty === 'medium' ? 2.0 : 3.0;
+                    star.lifetime = Math.max(base - difficultyFactor, 1.0);
+                } else {
+                    if (difficulty === 'hard') {
+                        if (star.type === 'golden' || star.type === 'rainbow') {
+                            star.lifetime = 3.5; // Longer duration for special stars in hard mode
+                        } else {
+                            star.lifetime = 2.0;
+                        }
+                    }
+                    else if (difficulty === 'medium') star.lifetime = 2.5;
+                    else star.lifetime = 3.0; // Classic Reset
+                }
+
+                score.renderer = <Score score={score.score} time={score.time} lives={score.lives} mode={score.mode} difficulty={score.difficulty} />;
             }
         }
     });
@@ -292,12 +307,10 @@ const MoveFinger = (entities: any, { touches, time, dispatch }: { touches: Touch
         score.time = 0;
     }
 
-
-
     // Update Timer (Only for Classic Mode)
     if (score.mode === 'classic') {
         if (score && score.time > 0) {
-            score.time -= 0.03; // Adjusted for roughly 30fps/real-time feel
+            score.time -= 0.05; // Increased timer speed
         } else if (score && score.time <= 0) {
             // Time's up! Dispatch Game Over
             dispatch({
@@ -322,7 +335,7 @@ const MoveFinger = (entities: any, { touches, time, dispatch }: { touches: Touch
     }
 
     // Always update renderer with latest time
-    score.renderer = <Score score={score.score} time={score.time} lives={score.lives} mode={score.mode} />;
+    score.renderer = <Score score={score.score} time={score.time} lives={score.lives} mode={score.mode} difficulty={score.difficulty} />;
 
     return entities;
 };
@@ -409,6 +422,7 @@ const MoveFingerAnimation: React.FC<MoveFingerAnimationProps> = ({ onExit, mode,
                     score: e.score,
                     date: new Date().toISOString(),
                     mode: mode,
+                    difficulty: difficulty,
                     stats: e.stats || {
                         stars: 0,
                         rainbows: 0,
@@ -539,7 +553,7 @@ const MoveFingerAnimation: React.FC<MoveFingerAnimationProps> = ({ onExit, mode,
                     collectedBombs: 0,
                     collectedHearts: 0,
                     collectedGoldens: 0,
-                    renderer: <Score score={0} time={mode === 'classic' ? 60 : 0} lives={3} mode={mode} />
+                    renderer: <Score score={0} time={mode === 'classic' ? 60 : 0} lives={3} mode={mode} difficulty={difficulty} />
                 }
             });
         }
@@ -579,7 +593,7 @@ const MoveFingerAnimation: React.FC<MoveFingerAnimationProps> = ({ onExit, mode,
                             collectedBombs: 0,
                             collectedHearts: 0,
                             collectedGoldens: 0,
-                            renderer: <Score score={0} time={mode === 'classic' ? 60 : 0} lives={3} mode={mode} />
+                            renderer: <Score score={0} time={mode === 'classic' ? 60 : 0} lives={3} mode={mode} difficulty={difficulty} />
                         },
                         // Initial stars based on difficulty
                         ...(() => {
